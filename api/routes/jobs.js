@@ -5,7 +5,7 @@ const JobsController = require('../controllers/jobs');
 
 router.get('/', JobsController.jobs_get_all);
 
-router.get('/:jobId', JobsController.jobs_get_job);
+router.get('/:streetId', JobsController.jobs_get_jobs_by_street);
 
 router.post('/', JobsController.jobs_create_job);
 

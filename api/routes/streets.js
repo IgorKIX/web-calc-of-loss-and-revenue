@@ -6,7 +6,9 @@ const StreetsController = require('../controllers/streets');
 
 router.get('/', StreetsController.streets_get_all);
 
-router.get('/:streetId', StreetsController.streets_get_street);
+// router.get('/:streetId', StreetsController.streets_get_street);
+
+router.get('/:adminId', StreetsController.streets_get_streets_by_admin);
 
 router.post('/', StreetsController.streets_create_street);
 

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const Job = require('../models/job');
 const Street = require('../models/street');
@@ -35,37 +36,31 @@ exports.jobs_get_all = (req, res, next) => {
         });
 };
 
-exports.jobs_get_job = (req, res, next) => {
-    const id = req.params.jobId;
-    Job.findOne({_id: id})
-    .select('name street date profit loss _id')
-        .populate({
-            path: 'street',
-            model: 'Street',
-            select: 'name',
-            populate: {
-                path: 'admin',
-                model: 'Admin',
-                select: 'name'
-            }
-        })
+exports.jobs_get_jobs_by_street = (req, res, next) => {
+    const id = req.params.streetId;
+    Job.find({street: new ObjectId(id)})
+        .select('name date profit loss street _id')
         .exec()
-        .then(doc => {
-            if(doc){
-                console.log('From database', doc);
+        .then(docs => {
+            if(docs === undefined || docs.length !== 0){
+                console.log('From database', docs);
                 const response = {
-                    _id: doc._id,
-                    name: doc.name,
-                    date: doc.date,
-                    profit: doc.profit,
-                    loss: doc.loss,
-                    street: doc.street,
-                    request: {
-                        type: 'GET',
-                        description: 'GET_ALL_JOBS',
-                        url: `http://localhost:3000/jobs/`
-                    }
-                }
+                    count: docs.length,
+                    jobs: docs.map(doc => {
+                        return {
+                            _id: doc._id,
+                            name: doc.name,
+                            date: doc.date,
+                            profit: doc.profit,
+                            loss: doc.loss,
+                            street: doc.street,
+                            request: {
+                                type: 'GET',
+                                url: `http://localhost:3000/jobs/${doc._id}`
+                            }
+                        }
+                    })
+                };
                 res.status(200).json(response);
             } else {
                 res.status(404).json({message: 'No valid entry found for provided ID'});
@@ -75,6 +70,7 @@ exports.jobs_get_job = (req, res, next) => {
             console.log(err);
             res.status(500).json({error: err});
         });
+
 };
 
 exports.jobs_create_job = (req, res, next) => {

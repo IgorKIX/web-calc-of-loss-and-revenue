@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const Street = require('../models/street');
 const Admin = require('../models/admin');
@@ -32,25 +33,58 @@ exports.streets_get_all = (req, res, next) => {
         });
 };
 
-exports.streets_get_street = (req, res, next) => {
-    const id = req.params.streetId;
-    Admin.findOne({_id: id})
-    .select('name _id')
-        .populate('admin', 'name')
+// exports.streets_get_street = (req, res, next) => {
+//     const id = req.params.streetId;
+//     Street.findOne({_id: id})
+//     .select('name _id')
+//         .populate('admin', 'name')
+//         .exec()
+//         .then(doc => {
+//             if(doc){   
+//                 console.log('From database', doc);
+//                 const response = {
+//                     _id: doc._id,
+//                     name: doc.name,
+//                     admin: doc.admin,
+//                     request: {
+//                         type: 'GET',
+//                         description: 'GET_ALL_STREETS',
+//                         url: `http://localhost:3000/streets/`
+//                     }
+//                 }
+//                 res.status(200).json(response);
+//             } else {
+//                 res.status(404).json({message: 'No valid entry found for provided ID'});
+//             }
+//         })
+//         .catch(err => {
+//             console.log(err);
+//             res.status(500).json({error: err});
+//         });
+// };
+
+exports.streets_get_streets_by_admin = (req, res, next) => {
+    const id = req.params.adminId;
+    Street.find({admin: new ObjectId(id)})
+        .select('name _id')
         .exec()
-        .then(doc => {
-            if(doc){   
-                console.log('From database', doc);
+        .then(docs => {
+            if(docs === undefined || docs.length !== 0){
+                console.log('From database', docs);
                 const response = {
-                    _id: doc._id,
-                    name: doc.name,
-                    admin: doc.admin,
-                    request: {
-                        type: 'GET',
-                        description: 'GET_ALL_STREETS',
-                        url: `http://localhost:3000/streets/`
-                    }
-                }
+                    count: docs.length,
+                    streets: docs.map(doc => {
+                        return {
+                            _id: doc._id,
+                            name: doc.name,
+                            admin: doc.admin,
+                            request: {
+                                type: 'GET',
+                                url: `http://localhost:3000/streets/${doc._id}`
+                            }
+                        }
+                    })
+                };
                 res.status(200).json(response);
             } else {
                 res.status(404).json({message: 'No valid entry found for provided ID'});
@@ -60,10 +94,11 @@ exports.streets_get_street = (req, res, next) => {
             console.log(err);
             res.status(500).json({error: err});
         });
+
 };
 
 exports.streets_create_street = (req, res, next) => {
-    Admin.findOne({_id: req.body.adminId})
+    Street.findOne({_id: req.body.adminId})
         .then(doc => {
             if (!doc) {
                 return res.status(404).json({

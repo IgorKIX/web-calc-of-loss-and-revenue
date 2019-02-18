@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const indexRouter = require('./api/controllers/index');
 const adminsRoutes = require('./api/routes/admins');
 const streetRoutes = require('./api/routes/streets');
 const jobRoutes = require('./api/routes/jobs');
@@ -11,6 +12,12 @@ const jobRoutes = require('./api/routes/jobs');
 mongoose.connect('mongodb://localhost/sumwebdb', {useNewUrlParser: true});
 mongoose.Promise = global.Promise;
 mongoose.set('useFindAndModify', false);
+
+//set up template engine
+app.set('views', './views');
+app.set('view engine', 'ejs');
+//static files
+app.use(express.static(__dirname + '/public'));
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: false}));
@@ -26,7 +33,8 @@ app.use((req, res, next) => {
     }
     next();
 });
-
+//TODO:make this '/' properly
+app.use('/', indexRouter);
 app.use('/admins', adminsRoutes);
 app.use('/streets', streetRoutes);
 app.use('/jobs', jobRoutes);

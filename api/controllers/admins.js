@@ -35,7 +35,7 @@ exports.admins_get_admin = (req, res, next) => {
         .exec()
         .then(doc => {
             console.log('From database', doc);
-            if(doc){
+            if(doc === undefined || doc.length !== 0){
                 const response = {
                     _id: doc._id,
                     name: doc.name,
